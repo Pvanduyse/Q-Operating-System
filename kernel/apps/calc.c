@@ -1,4 +1,5 @@
 #include "calc.h"
+#include "../inc/math.h"
 
 #include "../inc/intTypeDefs.h"
 #include "../inc/screenUtils.h"
@@ -14,7 +15,7 @@ int mathOp = 0;
 int tempNum = 0;
 int strNum = 0;
 int mathError = 0; //0 no error
-int isNegative = 0;//Not negative
+bool isNegative = false;
 
 // concatinating for calculator
 int concat(int x, int y)
@@ -27,15 +28,8 @@ int concat(int x, int y)
     return x * pow + y;
 }
 
-int isMathOperator(int charToCheck){
-    if(charToCheck == 42 || charToCheck == 43 || charToCheck == 45 || charToCheck == 47)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+bool isMathOperator(int charToCheck){
+    return charToCheck == 42 || charToCheck == 43 || charToCheck == 45 || charToCheck == 47;
 }
 
 void calcHelp()
@@ -44,10 +38,18 @@ void calcHelp()
     print("\n[HELP TEXT HERE]", 0x0F);
 }
 
-void calc(char calcArgs[CALCSIZE/2])
+void calc(char *calcArgs)
 {
     if(calcArgs[1] == 45 && calcArgs[2] == 104){
 	calcHelp();
+    }else if(calcArgs[1] == 112 && calcArgs[2] == 105){
+	print("\n",0x00);
+	//Test print PI
+	printint((int)PI,0x0F);
+    }else if(calcArgs[1] == 112 && calcArgs[2] == 116){
+	print("\n",0x00);
+	//Power of ten test. Currently only accept 1 number. This is a proof of concept
+	printint(powerOfTen(calcArgs[4]),0x0F);
     }else{
 
     print("\nUse calc -h for help", 0x0F);
@@ -97,21 +99,21 @@ void calc(char calcArgs[CALCSIZE/2])
                     break;
                 default:
 			// Properly check for math operator
-			if(calcInput[i] == 42 || calcInput[i] == 43 || calcInput[i] == 45 || calcInput[i] == 47){
+			if(isMathOperator(calcInput[i])){
 				//check if user enter negative and not minus operator
-				if(calcInput[i] == 45 && isMathOperator(calcInput[i+1]) == 0){
-					isNegative = 1;
+				if(calcInput[i] == 45 && isMathOperator(calcInput[i+1])){
+					isNegative = true;
 				}
 				else
 				{
 					strNum = tempNum;
 					//Set negative for the number before math operator
-					if(isNegative == 1)
+					if(isNegative)
 					{
 						strNum *= -1;
 					}
 					tempNum = 0;
-					isNegative = 0;
+					isNegative = false;
 					mathOp = calcInput[i]; 	// set math operator
 				}
 			}
@@ -124,7 +126,7 @@ void calc(char calcArgs[CALCSIZE/2])
         }
     }
     //Set negative number for the number after math operator
-    if(isNegative == 1)
+    if(isNegative)
     {
         tempNum *= -1;
     }
@@ -179,6 +181,6 @@ void calc(char calcArgs[CALCSIZE/2])
 
     strNum = 0;
 
-    isNegative = 0;
+    isNegative = false;
     }
 }
